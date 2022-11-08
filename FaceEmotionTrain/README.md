@@ -14,3 +14,7 @@ and train model with,
 ```bash
 python train.py --device cuda --config YOUR_CONFIG_NAME
 ```
+# Ablation study(experiments) example
+```bash
+python train.py --device cuda --config YOUR_CONFIG_NAME --save checkpoint/YOUR_CONFIG_NAME --exp EXPERIMENT_NUMBER
+```
