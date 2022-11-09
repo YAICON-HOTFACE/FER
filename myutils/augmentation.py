@@ -116,14 +116,13 @@ def cutmix(data, targets, alpha):
     W = data.size()[2]
     H = data.size()[3]
     bbx1,bby1, bbx2, bby2 = get_bbox((W,H),alpha)
-        
-    tmp = data.clone()
-    tmp[:,:, bbx1:bbx2, bby1:bby2] = data[indices,:, bbx1:bbx2, bby1:bby2]
+
+    data[:,:, bbx1:bbx2, bby1:bby2] = data[indices,:, bbx1:bbx2, bby1:bby2]
     
     lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (W * H)) # adjust lambda
     targets = targets * lam + targets2 * (1-lam)
 
-    return tmp, targets
+    return data, targets
 
 def snapmix(data, targets ,model,target_layers, beta ):
     """
