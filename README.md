@@ -8,7 +8,7 @@
 
 <!-- <h4 align="center">Hi 👋</h4> -->
 
-<p align="center"; font-size=24px><b>This project was carried out by YAI 10th facial image emotion recognition team</b></p>
+<p align="center"; font-size=24px><b>YAI 10th facial image emotion recognition team</b></p>
 </br>
 
 ---
