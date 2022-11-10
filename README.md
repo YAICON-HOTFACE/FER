@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=waving&color=0:F23F12,50:F39F86&height=250&section=header&text=YAI%20%20Conference&fontSize=45&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
+![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=250&section=header&text=YAI%20%20Conference&fontSize=45&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
 <!-- 
 <p align="center"><a href="#">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=0:F9D976,100:F39F86&height=250&section=header&text="YAI Conference" &fontSize=40&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40" alt="header" />
