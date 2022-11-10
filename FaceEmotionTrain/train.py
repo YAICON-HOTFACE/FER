@@ -14,11 +14,21 @@ from dataset.dataset import FaceEmotionDataset
 from utils import *
 from loss import *
 import pickle
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
+import pdb
 
 def train(cfg, args, writer=None):
     # (0) : global
-    num_classes = 8 if cfg['emotion'] else 11
+    if not cfg['emotion']:
+        num_classes = 11
+    elif cfg['dataset']['clsnum'] == 8:
+        num_classes = 8
+    elif cfg['dataset']['clsnum'] == 7:
+        num_classes = 7
+    else:
+        raise ValueError("Not available class number")
+
     in_channel = 1 if cfg["gray"] else 3
     device = args.device
     batch_size = cfg['dataset']['batch']
@@ -32,9 +42,9 @@ def train(cfg, args, writer=None):
                             ])
 
 
-    train_dataset = FaceEmotionDataset("train", transform, cfg["gray"], csv_file=cfg["dataset"]["train_csv"], emotion_only=cfg["emotion"])
-    val_dataset = FaceEmotionDataset("val", transform, cfg["gray"], csv_file=cfg["dataset"]["val_csv"], emotion_only=cfg["emotion"])
-    
+    train_dataset = FaceEmotionDataset("train", transform, cfg["gray"], csv_file=cfg["dataset"]["train_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes)
+    val_dataset = FaceEmotionDataset("val", transform, cfg["gray"], csv_file=cfg["dataset"]["val_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes)
+
     # Check number of each dataset size
     print(f"Training dataset size : {len(train_dataset)}")
     print(f"Validation dataset size : {len(val_dataset)}")
@@ -55,14 +65,13 @@ def train(cfg, args, writer=None):
     model = model_build(model_name=model_name, in_channel=in_channel, num_classes=num_classes)
 
 
-    print("Model configuration : ")
-    print(pytorch_model_summary.summary(model,
-                                torch.zeros(batch_size, in_channel, 224, 224),
-                                show_input=True))
-
-
     # (0) : Loss function
-    loss_func = build_loss_func(cfg['train']['loss'], device=device)
+    if cfg['train']['loss'] not in ['ldam', 'cb']:
+        loss_func = build_loss_func(cfg['train']['loss'], device=device)
+    else:
+        cls_num_list = train_dataset.get_cls_num()
+        print(f"# of classes : {cls_num_list}")
+        loss_func = build_loss_func(cfg['train']['loss'], device=device, cls_num_list=cls_num_list)
 
     # (1) : Optimizer & Scheduler
     optimizer = build_optim(cfg, model)
@@ -82,10 +91,30 @@ def train(cfg, args, writer=None):
         print("RESUME")
         checkpoint = torch.load(args.resume)
         model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer = optimizer.load_state_dict(checkpoint['optimizers_state_dict'])
+        optimizer = optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         scheduler = scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         start = checkpoint['epoch']
 
+    if args.finetune:
+        if cfg['train']['loss'] == "cb":
+            pgdFunc = MaxNorm_via_PGD(thresh=0.1)
+            pgdFunc.setPerLayerThresh(model)
+        active_layers = [model.model.fc[0].weight, model.model.fc[0].bias]
+        for param in model.parameters():
+            param.requires_grad = False
+        
+        for param in active_layers:
+            param.requires_grad = True
+
+        optimizer = build_optim(cfg, model)
+        scheduler = build_scheduler(cfg, optimizer)
+        start = 0
+        epochs = cfg['train']['epochs']
+
+    print("Model configuration : ")
+    print(pytorch_model_summary.summary(model,
+                                torch.zeros(batch_size, in_channel, 224, 224).to(device),
+                                show_input=True))
     for epoch in range(start, epochs):
 
         # (0) : Training
@@ -93,10 +122,21 @@ def train(cfg, args, writer=None):
         model.train()
         loading = tqdm(enumerate(train_dataloader), desc="training...")
         for i, (image, label) in loading:
-            
             optimizer.zero_grad()
             if cfg["train"]["mixup"]:
-                image, label = mixup_onehot(image, label, 1)
+                choice = np.random.choice(['mixup', 'cutmix', 'naive'], p=[0.15, 0.15, 0.7])
+                if choice == 'mixup':
+                    image, label = mixup_onehot(image, label, 1.0)
+            
+                elif choice == 'cutmix':
+                    image, label = cutmix(image, label, 3.0)
+            '''
+            if cfg["train"]["snapmix"]:
+                choice = np.random.choice([True, False])
+                if choice:
+                    image, label = image.to(device), label.to(device)
+                    image, label = snapmix(image, label, model, model.model.layer4, 0.1)
+            '''
             image, label = image.to(device), label.to(device)
             prediction = model(image)
             if cfg["train"]["logit"]:
@@ -153,6 +193,7 @@ def train(cfg, args, writer=None):
         print(f"Epoch #{epoch + 1} >>>> SAVE .ckpt file")
 
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -161,6 +202,8 @@ if __name__ == "__main__":
     parser.add_argument('--save', type=str, default='checkpoint/classification', help='Path to save model file')
     parser.add_argument('--resume', type=str, default='', help='Path to pretrained model file')
     parser.add_argument('--exp', type=int, default=1, help="experiment number")
+    parser.add_argument('--finetune', type=bool, default=False, help='fine tuning only fc layer')
+    parser.add_argument('--mask', type=bool, default=False, help="Apply mask on data augmentation")
     args = parser.parse_args()
 
     with open('config/' + args.config + '.yaml', 'r') as f:

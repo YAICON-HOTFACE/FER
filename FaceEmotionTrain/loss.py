@@ -37,6 +37,53 @@ class LDAMLoss(nn.Module):
         output = torch.where(index, x_m, x)
         return F.cross_entropy(self.s*output, target, weight=self.weight).to(self.device)
 
+
+
+def focal_loss(labels, logits, alpha, gamma):
+    BCLoss = F.binary_cross_entropy_with_logits(input = logits, target = labels,reduction = "none")
+
+    if gamma == 0.0:
+        modulator = 1.0
+    else:
+        modulator = torch.exp(-gamma * labels * logits - gamma * torch.log(1 + 
+            torch.exp(-1.0 * logits)))
+
+    loss = modulator * BCLoss
+
+    weighted_loss = alpha * loss
+    focal_loss = torch.sum(weighted_loss)
+
+    focal_loss /= torch.sum(labels)
+    return focal_loss
+
+
+
+def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gamma, device):
+    effective_num = 1.0 - np.power(beta, samples_per_cls)
+    weights = (1.0 - beta) / np.array(effective_num)
+    weights = weights / np.sum(weights) * no_of_classes
+
+    labels_one_hot = F.one_hot(labels, no_of_classes).float()
+    labels_one_hot = labels_one_hot.to(device)
+
+    weights = torch.tensor(weights).float()
+    weights = weights.unsqueeze(0)
+    weights = weights.repeat(labels_one_hot.shape[0],1).to(device)
+    weights = weights* labels_one_hot
+    weights = weights.sum(1)
+    weights = weights.unsqueeze(1)
+    weights = weights.repeat(1,no_of_classes)
+
+    if loss_type == "focal":
+        cb_loss = focal_loss(labels_one_hot, logits, weights, gamma)
+    elif loss_type == "sigmoid":
+        cb_loss = F.binary_cross_entropy_with_logits(input = logits,target = labels_one_hot, weights = weights)
+    elif loss_type == "softmax":
+        pred = logits.softmax(dim = 1)
+        cb_loss = F.binary_cross_entropy(input = pred, target = labels_one_hot, weight = weights)
+    return cb_loss
+
+
 def compute_adjustment(train_loader, device, tro=1.0):
     ## calculate count of labels
     label_count = {}
