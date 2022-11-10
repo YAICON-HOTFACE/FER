@@ -4,7 +4,29 @@
 python train.py --device cuda
 ```
 
-If you want to change training configuration, add ocnfiguration file(.yaml)
+If you want to change training configuration, add configuration file(.yaml)  
+Basic example of configuration is like below,
+```yaml
+emotion: True
+gray: False
+dataset:
+  clsnum: 8
+  batch: 32
+  train_csv : '/data/FaceEmotion/AFFNet/train_set/train_dataset.csv'
+  val_csv : '/data/FaceEmotion/AFFNet/val_set/val_dataset.csv'
+train:
+  model: 'resnet18'
+  lr: 0.0001
+  epochs: 20
+  val_iters: 100
+  loss: 'ce'
+  optim: 'adamw'
+  scheduler: {'MultiStepLR': {"milestones": [5, 10, 15, 20], "gamma": 0.5}}
+  logit: False
+  mixup: False
+  snapmix: False
+  cutmix: False
+```
 
 ```bash
 config
