@@ -27,7 +27,7 @@ train:
   snapmix: False
   cutmix: False
 ```
-
+And make sure if you want to add other augmentations, add them on configuration files
 ```bash
 config
 ├── YOUR_CONFIG_NAME.yaml
