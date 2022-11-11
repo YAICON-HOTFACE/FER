@@ -143,10 +143,12 @@ def train(cfg, args, writer=None):
             prediction = model(image)
             if cfg["train"]["logit"]:
                 prediction += logit_adjustment
-            if choice == 'naive':
+            if cfg["train"]["mix"] and choice == 'naive':
                 loss = compute_loss(loss_func, prediction, label)
-            else:
+            elif cfg["train"]["mix"]:
                 loss = compute_loss(loss_func, prediction, label1)*lam + compute_loss(loss_func, prediction, label2)*(1-lam)
+            else:
+                loss = compute_loss(loss_func, prediction, label)
             loss_r = 0
             for parameter in model.parameters():
                 loss_r += torch.sum(parameter ** 2)
@@ -156,11 +158,13 @@ def train(cfg, args, writer=None):
 
             training_loss += loss.item()
             _, prediction = torch.max(prediction, axis=1)
-            if choice == 'naive':
+            if cfg["train"]["mix"] and choice == 'naive':
                 accuracy = float(torch.sum(torch.eq(prediction, label)))/len(prediction)
-            else:
+            elif cfg["train"]["mix"]:
                 accuracy = (lam * prediction.eq(label1.data).cpu().sum().float()
                     + (1 - lam) * prediction.eq(label2.data).cpu().sum().float())/batch_size
+            else:
+                accuracy = float(torch.sum(torch.eq(prediction, label)))/len(prediction)
                 
             training_acc += accuracy
             loading.set_description(f"Loss : {training_loss/(i+1):.4f}, Acc : {100*training_acc/(i+1):.2f}%")
