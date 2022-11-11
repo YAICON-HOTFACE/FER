@@ -62,28 +62,73 @@ pip install tqdm
 ## Data Augementations
 ### 1. Mixup
 [mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
+
 Examples of Mixup augmentation on Affect-Net dataset
 <p align="center"> <img src="figure\mixup.png" width="500"/> </p>
 
+$$
+\tilde{I} = \lambda \times I_a + (1-\lambda)\times I_b 
+$$
+
+$$
+\rho_a = \lambda , \ \rho_b = 1-\lambda
+$$
 
 ### 2. CutMix
 [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/abs/1905.04899)
+
 Examples of CutMix augmentation on Affect-Net dataset
 <p align="center"> <img src="figure\cutmix2.png" width="500"/> </p>
 
+$$
+\tilde{I} = (1 - M_{\lambda}) \odot I_a + M_{\lambda}\odot I_b
+$$
+
+$$
+\rho_a = 1-\lambda , \ \rho_b = \lambda
+$$
 
 ### 3. SnapMix
 [SnapMix: Semantically Proportional Mixing for Augmenting Fine-grained Data](https://arxiv.org/pdf/2012.04846.pdf)
+
 Examples of SnapMix augmentation on Affect-Net dataset
 <p align="center"> <img src="figure\snapmix.png" width="500"/> </p>
+
+$$
+\tilde{I} = (1 - M_{\lambda^a}) \odot I_a + T_{\theta}(M_{\lambda^b}\odot I_b)
+$$
+
+$$
+S(I_i) = \frac{CAM(I_i)}{sum(CAM(I_i))}
+$$
+
+$$
+\rho_a = 1-sum(M_{\lambda^a}\odot S(I_a)) 
+$$
+
+$$
+\rho_b = sum(M_{\lambda^b}\odot S(I_b))
+$$
+
 
 ### 4. Attentive CutMix
 [Attentive CutMix: An Enhanced Data Augmentation
 Approach for Deep Learning Based Image
 Classification
 ](https://arxiv.org/pdf/2003.13048.pdf)
+
 Examples of Attentive CutMix augmentation on Affect-Net dataset
 <p align="center"> <img src="figure\attentive_cutmix2.png" width="500"/> </p>
+
+$$
+\tilde{I} = {B} \odot I_a + (1-{B})\odot I_b 
+$$
+
+
+$$
+\rho_a = \lambda , \ \rho_b = 1-\lambda 
+$$
+
 
 ---
 
