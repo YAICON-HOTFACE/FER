@@ -6,20 +6,32 @@
 
  -->
 
-<!-- <h4 align="center">Hi 👋</h4> -->
-
 <p align="center"; font-size=24px><b>YAI 10th facial image emotion recognition team</b></p>
 </br>
 
 ---
 
-# Use Demo.py
+# Face Emotion Recognition
+
+Efficient expression / emotion classification of facial images through deep learning.
+
+## Affect-Net dataset
+
+This dataset is annotated with emotions, valence, and arousal.
+It takes some approach to expressing a person’s emotion in a continuous space with regression.
+<p align="center"> <img src="figure\affectnet_annotate.png" alt="affectnet" /> </p>
+
+---
+
+# Demo
+
+Use `demo.py` to test our model.
 
 ## Install insight-face
 ```bash
 pip install -U Cython cmake numpy
 pip install onnxruntime-gpu
-pip install -U insight-face
+pip install -U insightface
 ```
 ## Requirements
 ```bash
@@ -32,3 +44,16 @@ pip install opencv-python
 conda install scikit-image
 pip install tqdm
 ```
+
+---
+
+# Contributors
+
+<b>
+<li>김주의
+<li>박준영
+<li>이수형
+<li>조용기
+<li>조정빈
+<li>황채연
+<b>
