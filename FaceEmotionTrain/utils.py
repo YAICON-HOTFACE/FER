@@ -319,8 +319,7 @@ def mixup_onehot(data, targets, alpha):
 
     lam = torch.FloatTensor([np.random.beta(alpha, alpha)])
     data = data * lam + data2 * (1 - lam)
-    targets = targets * lam + targets2 * (1 - lam)
-    return data, targets.type(torch.LongTensor)
+    return data, targets, targets2, lam
 
 def cutmix(data, targets, alpha):
     indices = torch.randperm(data.size()[0])
@@ -335,8 +334,7 @@ def cutmix(data, targets, alpha):
     
     lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (W * H)) # adjust lambda
     targets = targets * lam + targets2 * (1-lam)
-
-    return tmp, targets.type(torch.LongTensor)
+    return data, targets, targets2, lam
 
 def snapmix(data, targets ,model,target_layers, beta ):
     """
