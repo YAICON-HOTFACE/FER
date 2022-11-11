@@ -123,20 +123,14 @@ def train(cfg, args, writer=None):
         loading = tqdm(enumerate(train_dataloader), desc="training...")
         for i, (image, label) in loading:
             optimizer.zero_grad()
-            if cfg["train"]["mixup"]:
+            if cfg["train"]["mix"]:
                 choice = np.random.choice(['mixup', 'cutmix', 'naive'], p=[0.15, 0.15, 0.7])
                 if choice == 'mixup':
                     image, label = mixup_onehot(image, label, 1.0)
             
                 elif choice == 'cutmix':
                     image, label = cutmix(image, label, 3.0)
-            '''
-            if cfg["train"]["snapmix"]:
-                choice = np.random.choice([True, False])
-                if choice:
-                    image, label = image.to(device), label.to(device)
-                    image, label = snapmix(image, label, model, model.model.layer4, 0.1)
-            '''
+
             image, label = image.to(device), label.to(device)
             prediction = model(image)
             if cfg["train"]["logit"]:
