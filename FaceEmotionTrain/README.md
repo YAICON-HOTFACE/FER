@@ -23,9 +23,8 @@ train:
   optim: 'adamw'
   scheduler: {'MultiStepLR': {"milestones": [5, 10, 15, 20], "gamma": 0.5}}
   logit: False
-  mixup: False
-  snapmix: False
-  cutmix: False
+  mix: False
+
 ```
 And make sure if you want to add other augmentations, add them on configuration files
 ```bash
