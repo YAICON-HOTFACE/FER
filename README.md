@@ -59,6 +59,9 @@ pip install opencv-python
 conda install scikit-image
 pip install tqdm
 ```
+
+---
+# Tools for Training
 ## Data Augementations
 ### 1. Mixup
 [mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
@@ -133,11 +136,11 @@ $$
 
 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)
 
-## Visual Examples
+### Visual Examples of CAM on Affect-net
 
-| What makes the network think the image label is 'pug, pug-dog' | What makes the network think the image label is 'tabby, tabby cat' | Combining Grad-CAM with Guided Backpropagation for the 'pug, pug-dog' class |
+| What makes the network think the image label is 'Fear' | What makes the network think the image label is 'Disgust' | What makes the network think the image label is 'Sad' |
 | ---------------------------------------------------------------|--------------------|-----------------------------------------------------------------------------|
- <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/dog.jpg?raw=true" width="256" height="256"> | <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/cat.jpg?raw=true" width="256" height="256"> | <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/cam_gb_dog.jpg?raw=true" width="256" height="256"> |
+ <img src="figure\fear.png" width="256" height="256"> | <img src="figure/Disgust.png" width="256" height="256"> | <img src="figure\sad.png" width="256" height="256"> |
 ---
 
 # Contributors
