@@ -59,6 +59,21 @@ pip install opencv-python
 conda install scikit-image
 pip install tqdm
 ```
+## Augementations
+### 1. Mixup
+[mixup: Beyond Empirical Risk Minimization](https://arxiv.org/abs/1710.09412)
+
+### 2. CutMix
+[CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/abs/1905.04899)
+
+### 3. SnapMix
+[SnapMix: Semantically Proportional Mixing for Augmenting Fine-grained Data](https://arxiv.org/pdf/2012.04846.pdf)
+
+### 4. 
+[Attentive CutMix: An Enhanced Data Augmentation
+Approach for Deep Learning Based Image
+Classification
+](https://arxiv.org/pdf/2003.13048.pdf)
 
 ---
 
