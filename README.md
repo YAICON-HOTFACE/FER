@@ -21,3 +21,14 @@ pip install -U Cython cmake numpy
 pip install onnxruntime-gpu
 pip install -U insight-face
 ```
+## Requirements
+```bash
+pip install torch>=1.8.1 
+pip install torchvision>=0.9.1
+pip install pytorch-lightning
+pip install numpy
+pip install scipy
+pip install opencv-python
+conda install scikit-image
+pip install tqdm
+```
