@@ -129,7 +129,15 @@ $$
 \rho_a = \lambda , \ \rho_b = 1-\lambda 
 $$
 
+## Advanced AI explainability
 
+[pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)
+
+## Visual Examples
+
+| What makes the network think the image label is 'pug, pug-dog' | What makes the network think the image label is 'tabby, tabby cat' | Combining Grad-CAM with Guided Backpropagation for the 'pug, pug-dog' class |
+| ---------------------------------------------------------------|--------------------|-----------------------------------------------------------------------------|
+ <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/dog.jpg?raw=true" width="256" height="256"> | <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/cat.jpg?raw=true" width="256" height="256"> | <img src="https://github.com/jacobgil/pytorch-grad-cam/blob/master/examples/cam_gb_dog.jpg?raw=true" width="256" height="256"> |
 ---
 
 # Contributors
