@@ -79,7 +79,7 @@ pip install tqdm
 Approach for Deep Learning Based Image
 Classification
 ](https://arxiv.org/pdf/2003.13048.pdf)
-<p align="center"> <img src="figure\attentive_cutmix.png" width="500"/> </p>
+<p align="center"> <img src="figure\attentive_cutmix2.png" width="500"/> </p>
 
 ---
 
