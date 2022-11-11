@@ -17,9 +17,24 @@ Efficient expression / emotion classification of facial images through deep lear
 
 ## Affect-Net dataset
 
-This dataset is annotated with emotions, valence, and arousal.
+Affect-Net is face expression dataset annotated with emotions, valence, and arousal.
 It takes some approach to expressing a person’s emotion in a continuous space with regression.
-<p align="center"> <img src="figure\affectnet_annotate.png" alt="affectnet" /> </p>
+
+<p align="center"> <img src="figure\affectnet_annotate.png" alt="affectnet" /> 
+
+<em> Mollahosseini, Ali, Behzad Hasani, and Mohammad H. Mahoor. "Affectnet: A database for facial expression, valence, and arousal computing in the wild." IEEE 2017 </em>
+</p>
+
+## Long tail distribution
+
+In long tail distribution, there is some imbalance between head and tail distribution.
+Affect-Net training set has long tail distribution.
+
+<p align="center"> <img src="figure\affectnet_longtail.png" alt="affectnet" /> </p>
+
+## Expreiments
+We mainly did the experiments about data augmentation (mixup, cutmix, etc).
+In addition, as wearing a mask has become a daily routine these days, we tested whether the model can capture emotions well with facial segments excluding mask part.
 
 ---
 
@@ -57,3 +72,5 @@ pip install tqdm
 <li>조정빈
 <li>황채연
 <b>
+
+![footer](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=150&section=footer&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
