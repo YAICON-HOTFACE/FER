@@ -151,8 +151,7 @@ def snapmix(data, targets ,model,target_layers, beta ):
     lam_b = 1 - lam_a
     
     ret = data.clone()
-    
-    
+  
     if area1 > 0 and area > 0 :
         tmp = data[indices , : ,bbx1_1:bbx2_1, bby1_1:bby2_1].clone()#data2
         tmp = torch.nn.functional.interpolate(tmp, size=(bbx2-bbx1,bby2-bby1), mode='bilinear', align_corners=True)
@@ -166,9 +165,6 @@ def snapmix(data, targets ,model,target_layers, beta ):
         lam_a[same_label] += lam_b[same_label]
         lam_b[same_label] += tmpa[same_label]
         
-        lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (data.size()[-1] * data.size()[-2]))
-        lam_a[torch.isnan(lam_a)] = lam
-        lam_b[torch.isnan(lam_b)] = 1-lam
         targets = targets * lam_a + targets2 * lam_b
     
     return ret, targets
