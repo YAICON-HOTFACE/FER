@@ -12,3 +12,12 @@
 </br>
 
 ---
+
+# Use Demo.py
+
+## Install insight-face
+```bash
+pip install -U Cython cmake numpy
+pip install onnxruntime-gpu
+pip install -U insight-face
+```
