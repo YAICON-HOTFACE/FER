@@ -13,7 +13,7 @@ from model_factory import model_build
 from dataset.dataset import FaceEmotionDataset
 from utils import *
 from loss import *
-import pickle
+import pickle5 as pickle
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import pdb
@@ -37,21 +37,23 @@ def train(cfg, args, writer=None):
     transform=transforms.Compose([
                                 transforms.ToTensor(),
                                 transforms.RandomHorizontalFlip(0.5),
-                                transforms.RandomResizedCrop(size=(224, 224), scale=(0.8, 1.2)),
-                                transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0)
+                                transforms.RandomResizedCrop(size=(224, 224), scale=(0.9, 1.1)),
                             ])
 
+    transform_val=transforms.Compose([
+                                transforms.ToTensor()
+                            ])
 
-    train_dataset = FaceEmotionDataset("train", transform, cfg["gray"], csv_file=cfg["dataset"]["train_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes)
-    val_dataset = FaceEmotionDataset("val", transform, cfg["gray"], csv_file=cfg["dataset"]["val_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes)
+    train_dataset = FaceEmotionDataset("train", transform, cfg["gray"], csv_file=cfg["dataset"]["train_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes, masking=args.mask)
+    val_dataset = FaceEmotionDataset("val", transform_val, cfg["gray"], csv_file=cfg["dataset"]["val_csv"], emotion_only=cfg["emotion"], emotion_num=num_classes, masking=args.mask)
 
     # Check number of each dataset size
     print(f"Training dataset size : {len(train_dataset)}")
     print(f"Validation dataset size : {len(val_dataset)}")
     
     # Dataloaders
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=6)
 
     print("Calculate logit adjustment...")
     if os.path.isfile("logit_adjustment.pickle"):
@@ -115,10 +117,12 @@ def train(cfg, args, writer=None):
     print(pytorch_model_summary.summary(model,
                                 torch.zeros(batch_size, in_channel, 224, 224).to(device),
                                 show_input=True))
+    
     for epoch in range(start, epochs):
 
         # (0) : Training
         training_loss, training_acc = 0.0, 0.0
+        total = 0
         model.train()
         loading = tqdm(enumerate(train_dataloader), desc="training...")
         for i, (image, label) in loading:
@@ -126,22 +130,38 @@ def train(cfg, args, writer=None):
             if cfg["train"]["mix"]:
                 choice = np.random.choice(['mixup', 'cutmix', 'naive'], p=[0.15, 0.15, 0.7])
                 if choice == 'mixup':
-                    image, label = mixup_onehot(image, label, 1.0)
-            
-                elif choice == 'cutmix':
-                    image, label = cutmix(image, label, 3.0)
+                    image, label1, label2, lam = mixup_onehot(image, label, 1.0)
+                    label1, label2 = label1.to(device), label2.to(device)
+                    lam = float(lam)
 
+                elif choice == 'cutmix':
+                    image, label1, label2, lam = cutmix(image, label, 3.0)
+                    label1, label2 = label1.to(device), label2.to(device)
+                    lam = float(lam)
+                    
             image, label = image.to(device), label.to(device)
             prediction = model(image)
             if cfg["train"]["logit"]:
                 prediction += logit_adjustment
-            loss = compute_loss(loss_func, prediction, label)
+            if choice == 'naive':
+                loss = compute_loss(loss_func, prediction, label)
+            else:
+                loss = compute_loss(loss_func, prediction, label1)*lam + compute_loss(loss_func, prediction, label2)*(1-lam)
+            loss_r = 0
+            for parameter in model.parameters():
+                loss_r += torch.sum(parameter ** 2)
+            loss = loss + 1e-4 * loss_r
             loss.backward()
             optimizer.step()
 
             training_loss += loss.item()
             _, prediction = torch.max(prediction, axis=1)
-            accuracy = float(torch.sum(torch.eq(prediction, label)))/len(prediction)
+            if choice == 'naive':
+                accuracy = float(torch.sum(torch.eq(prediction, label)))/len(prediction)
+            else:
+                accuracy = (lam * prediction.eq(label1.data).cpu().sum().float()
+                    + (1 - lam) * prediction.eq(label2.data).cpu().sum().float())/batch_size
+                
             training_acc += accuracy
             loading.set_description(f"Loss : {training_loss/(i+1):.4f}, Acc : {100*training_acc/(i+1):.2f}%")
             # break
@@ -166,7 +186,6 @@ def train(cfg, args, writer=None):
 
                 _, prediction = torch.max(prediction, axis=1)
                 accuracy = float(torch.sum(torch.eq(prediction, label)))/len(prediction)
-                validation_loss += loss.item()
                 val_acc += accuracy
                 # break
 
