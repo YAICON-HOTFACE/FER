@@ -172,3 +172,53 @@ def snapmix(data, targets ,model,target_layers, beta ):
         targets = targets * lam_a + targets2 * lam_b
     
     return ret, targets
+
+
+def top_k(a):
+    k = 6
+    idx = np.argpartition(a.ravel(),a.size-k)[-k:]
+    return np.column_stack(np.unravel_index(idx, a.shape))
+
+def replace_attentive_regions(rand_img, image, attentive_regions,grid_size):
+    """
+    rand_img: the img to be replaced
+    image: where the 'patches' come from
+    attentive_regions: an array contains the coordinates of attentive regions
+    """
+    np_rand_img, np_img = np.array(rand_img), np.array(image)
+    for attentive_region in attentive_regions:
+        replace_attentive_region(np_rand_img, np_img, attentive_region,grid_size)
+    return Image.fromarray(np_rand_img)
+
+def replace_attentive_region(np_rand_img, np_img, attentive_region,grid_size):
+    x, y = attentive_region
+    x1, x2, y1, y2 = grid_size * x, grid_size * (x+1), grid_size * y, grid_size * (y+1)
+    region = np_img[x1:x2, y1: y2]
+    np_rand_img[x1:x2, y1:y2] = region
+    
+
+def atten_cutmix(data, targets, model):
+    img_list = [transforms.ToPILImage()(tensor) for tensor in data]
+    temp_model = torch.nn.Sequential(*list(model.children())[:-2])
+    model = temp_model
+    grid_size = 32 #224/7
+    
+    output = []
+    out_targets = []
+    for i in range(len(img_list)):
+        img = img_list[i]
+
+        rand_index = np.random.randint(0, len(img_list))
+        while rand_index == i:
+            rand_index = np.random.randint(0, len(img_list))
+            
+        rand_img = img_list[rand_index]
+        attentive_regions = top_k(model(transforms.functional.to_tensor(rand_img).unsqueeze_(0))[0][-1].detach().numpy())
+        img = replace_attentive_regions(img, rand_img, attentive_regions,grid_size)
+        output.append(transforms.ToTensor()(img))
+        out_targets.append(targets[i]*(43./49.) + targets[rand_index]*(6./49.))
+
+    output = torch.stack(output, dim=0)
+    out_targets = torch.stack(out_targets, dim = 0)
+    
+    return output, out_targets
