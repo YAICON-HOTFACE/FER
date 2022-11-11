@@ -26,17 +26,19 @@ from tqdm import tqdm
 if __name__ == "__main__":
     rootdir = os.path.abspath("./images")
     labeldir = os.path.abspath("./annotations")
-    information = {"images":[], "labels":[]}
+    information = {"images":[], "labels":[], "lnds":[]}
 
     for file in tqdm(os.listdir(rootdir)):
         filename, fileext = os.path.splitext(file)
         if fileext == ".jpg":
             information["images"] += [os.path.join(rootdir, file)]
             information["labels"] += [np.load(os.path.join(labeldir, filename+"_exp.npy"))]
-
+            information["lnds"] += [np.load(os.path.join(labeldir, filename+"_lnd.npy"))]
 
     df = pd.DataFrame.from_dict(information)
     df.to_csv("train_dataset.csv")
+
+
 ```
 
 ## Validation set
@@ -49,15 +51,17 @@ from tqdm import tqdm
 if __name__ == "__main__":
     rootdir = os.path.abspath("./images")
     labeldir = os.path.abspath("./annotations")
-    information = {"images":[], "labels":[]}
+    information = {"images":[], "labels":[], "lnds":[]}
 
     for file in tqdm(os.listdir(rootdir)):
         filename, fileext = os.path.splitext(file)
         if fileext == ".jpg":
             information["images"] += [os.path.join(rootdir, file)]
             information["labels"] += [np.load(os.path.join(labeldir, filename+"_exp.npy"))]
-
+            information["lnds"] += [np.load(os.path.join(labeldir, filename+"_lnd.npy"))]
 
     df = pd.DataFrame.from_dict(information)
     df.to_csv("val_dataset.csv")
+
+
 ```
