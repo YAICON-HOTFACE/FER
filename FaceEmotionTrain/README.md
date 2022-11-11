@@ -46,4 +46,3 @@ You need to read README file in AFFNet directory. [Here](https://github.com/YAIC
 | Training dataset | Validation dataset |
 |------------|-------------|
 | <p align="center"><img src="train_dist.png"  width="450"></p> | <p align="center"><img src="val_dist.png"  width="450"></p> |
-
