@@ -1,5 +1,4 @@
 import torch
-# try:
 from models.resnet import *
 from models.edgenext import *
 from models.yolov5 import *
@@ -10,14 +9,6 @@ from models.mobilenetv3 import mobilenetv3
 from models.edgenext import create_edgenext_xx_small
 from facenet_pytorch import InceptionResnetV1
 from models.convnext import *
-# except:
-#     from resnet import *
-#     from edgenext import *
-#     from yolov5 import *
-#     from squeezenet import *
-#     from mobilenetv2 import MobileNetV2
-#     from efficientnet import EfficientNetLite
-#     from mobilenetv3 import mobilenetv3
 import argparse
 import time
 import os
