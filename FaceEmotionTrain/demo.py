@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import cv2
 import math
+import pdb
 from skimage import transform as trans
 import argparse
 
@@ -52,17 +53,19 @@ def crop_n_align(app, img, box=False):
     arcface_src = np.expand_dims(arcface_src, axis=0)
     faces = app.get(img)
     find = (len(faces) != 0)
+    face_images = []
+    bboxs = []
     if find:
-        kpss = faces[0]['kps']
-        image = norm_crop(img, kpss, arcface_src, image_size=1024)
-
-    else:
-        image = img
+        for face in faces:
+            kpss = face['kps']
+            face_images += [norm_crop(img, kpss, arcface_src, image_size=224)]
+            if box:
+                bboxs += [face['bbox']]
 
     if box:
-        return image, find, faces
+        return face_images, find, bboxs
     else:
-        return image, find
+        return face_images, find
 
 
 def demo(cfg, args, mode):
@@ -78,16 +81,16 @@ def demo(cfg, args, mode):
     ##############################
     #       BUILD MODEL          #
     ##############################
-    model = model_build(model_name=cfg['train']['model'], num_classes=8)
+    model = model_build(model_name=cfg['train']['model'], num_classes=8, in_channel=3)
     # only predict blur regression label -> num_classes = 1
-    
     if '.ckpt' or '.pt' in args.pretrained_path:
-        model_state = torch.load(args.pretrained_path)
-        model = model.load_state_dict(model_state)
+        model_state = torch.load(args.pretrained_path, map_location="cpu")["model_state_dict"]
+        model.load_state_dict(model_state)
 
     device = args.device
     if 'cuda' in device and torch.cuda.is_available():
         model = model.to(device)
+        model.eval()
     
     ##############################
     #       MODE : VIDEO         #
@@ -97,6 +100,7 @@ def demo(cfg, args, mode):
         cap = cv2.VideoCapture(video_path, apiPreference=cv2.CAP_MSMF)
         width  = int(cap.get(3))
         height = int(cap.get(4))
+        pdb.set_trace()
         fps = int(cap.get(cv2.CAP_PROP_FPS))
 
         save_path = args.save_path
@@ -118,43 +122,40 @@ def demo(cfg, args, mode):
             
             while pad <= 200:
                 padded = np.pad(frame, ((pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
-                face_image, find, faces = crop_n_align(app, padded, box=True)
+                face_images, find, bboxs = crop_n_align(app, padded, box=True)
                 if find:
                     break
                 pad += 50
 
             if find:
-                prediction = model(face_image)
-                _, pred = torch.max(prediction, axis=1)
-                emo_label = emo_idx[int(pred)] # predict blur label
-            else:
-                emo_label = 'Face not found'
+                for i, face_image in enumerate(face_images):
+                    face_image = torch.Tensor(face_image).permute(2, 0, 1).unsqueeze(0)
+                    with torch.no_grad():
+                    	prediction = model(face_image)
+                    _, pred = torch.max(prediction, axis=1)
+                    emo_label = emo_idx[int(pred)] # predict blur label
 
-            if len(faces) != 0:
-                bbox = faces[0]['bbox']
-                left_top = (int(bbox[0]-pad//2), int(bbox[1]-pad//2))
-                right_btm = (int(bbox[2]-pad//2), int(bbox[3]-pad//2))
-                red_color = (0, 0, 255)
-                thickness = 3
-                cv2.rectangle(frame, left_top, right_btm, red_color, thickness)
+                    bbox = bboxs[i]
+                    left_top = (int(bbox[0]-pad//2), int(bbox[1]-pad//2))
+                    right_btm = (int(bbox[2]-pad//2), int(bbox[3]-pad//2))
+                    red_color = (0, 0, 255)
+                    thickness = 3
+                    cv2.rectangle(frame, left_top, right_btm, red_color, thickness)
 
-            if emo_label == 'Face not found':
-                TextPosition = (int(width*0.38), int(height*0.9))
-            else:
-                TextPosition = (int(width*0.48), int(height*0.9))
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            fontScale = 1
-            fontColor = (255,255,255)
-            thickness = 2
-            lineType = 2
+                    TextPosition = (int(bbox[0]), int(bbox[1]))
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    fontScale = 0.5
+                    fontColor = (255,255,255)
+                    thickness = 1
+                    lineType = 2
 
-            cv2.putText(frame, emo_label, 
-                TextPosition, 
-                font, 
-                fontScale,
-                fontColor,
-                thickness,
-                lineType)
+                    cv2.putText(frame, emo_label,
+                        TextPosition,
+                        font,
+                        fontScale,
+                        fontColor,
+                        thickness,
+                        lineType)
             
             cv2.imshow('emotion image', frame)
             out.write(frame)
@@ -182,43 +183,41 @@ def demo(cfg, args, mode):
 
         while pad <= 200:
             padded = np.pad(frame, ((pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
-            face_image, find, faces = crop_n_align(app, padded, box=True)
+            face_images, find, bboxs = crop_n_align(app, padded, box=True)
             if find:
                 break
             pad += 50
 
             if find:
-                prediction = model(face_image)
-                _, pred = torch.max(prediction, axis=1)
-                emo_label = emo_idx[int(pred)] # predict blur label
-            else:
-                emo_label = 'Face not found'
+                for i, face_image in enumerate(face_images):
+                    face_image = torch.Tensor(face_image).permute(2, 0, 1).unsqueeze(0)
+                    with torch.no_grad():
+                    	prediction = model(face_image)
+                    _, pred = torch.max(prediction, axis=1)
+                    emo_label = emo_idx[int(pred)] # predict blur label
 
-        if len(faces) != 0:
-            bbox = faces[0]['bbox']
-            left_top = (int(bbox[0]-pad//2), int(bbox[1]-pad//2))
-            right_btm = (int(bbox[2]-pad//2), int(bbox[3]-pad//2))
-            red_color = (0, 0, 255)
-            thickness = 3
-            cv2.rectangle(frame, left_top, right_btm, red_color, thickness)
+                    bbox = bboxs[i]
+                    left_top = (int(bbox[0]-pad//2), int(bbox[1]-pad//2))
+                    right_btm = (int(bbox[2]-pad//2), int(bbox[3]-pad//2))
+                    red_color = (0, 0, 255)
+                    thickness = 3
+                    cv2.rectangle(frame, left_top, right_btm, red_color, thickness)
 
-        if emo_label == 'Face not found':
-            TextPosition = (int(width*0.4), int(height*0.9))
-        else:
-            TextPosition = (int(width*0.45), int(height*0.9))
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        fontScale              = 1
-        fontColor              = (255,255,255)
-        thickness              = 2
-        lineType               = 2
+                    TextPosition = (int(bbox[0]), int(bbox[1]))
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    fontScale = 0.5
+                    fontColor = (255,255,255)
+                    thickness = 1
+                    lineType = 2
 
-        cv2.putText(frame,emo_label, 
-            TextPosition, 
-            font,
-            fontScale,
-            fontColor,
-            thickness,
-            lineType)
+                    cv2.putText(frame, emo_label,
+                        TextPosition,
+                        font,
+                        fontScale,
+                        fontColor,
+                        thickness,
+                        lineType)
+
         cv2.imshow('emotion image', frame)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -226,12 +225,12 @@ def demo(cfg, args, mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='./config/baseline.yaml', help='Path for configuration file')
-    parser.add_argument('--device', type=str, default='cpu', help='Device for model inference. It can be "cpu" or "cuda" ')
-    parser.add_argument('--pretrained_path', type=str, default='', help='Path for pretrained model file')
+    parser.add_argument('--config', type=str, default='./config/resnet18_baseline.yaml', help='Path for configuration file')
+    parser.add_argument('--device', type=str, default='cuda', help='Device for model inference. It can be "cpu" or "cuda" ')
+    parser.add_argument('--pretrained_path', type=str, default='checkpoint/classification2/checkpoint_17.ckpt', help='Path for pretrained model file')
     parser.add_argument('--mode', type=str, default='video', help='Inference mode. it can be "video" or "image"')
-    parser.add_argument('--file_path', type=str, default='./data/me4.mp4', help='Path for the video or image you want to infer')
-    parser.add_argument('--save_path', type=str, default='./data/blur_sample.mp4', help='Path for saved the inference video')
+    parser.add_argument('--file_path', type=str, default='./sample.mp4', help='Path for the video or image you want to infer')
+    parser.add_argument('--save_path', type=str, default='./output.mp4', help='Path for saved the inference video')
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
