@@ -59,6 +59,7 @@ pip install opencv-python
 conda install scikit-image
 pip install tqdm
 ```
+<p align="center"> <img src="figure\demo_sample.gif" width="500"/> </p>
 
 ---
 # Tools for Training
