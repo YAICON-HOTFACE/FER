@@ -225,9 +225,9 @@ def demo(cfg, args, mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='./config/resnet18_baseline.yaml', help='Path for configuration file')
+    parser.add_argument('--config', type=str, default='./config/config_example.yaml', help='Path for configuration file')
     parser.add_argument('--device', type=str, default='cuda', help='Device for model inference. It can be "cpu" or "cuda" ')
-    parser.add_argument('--pretrained_path', type=str, default='checkpoint/classification2/checkpoint_17.ckpt', help='Path for pretrained model file')
+    parser.add_argument('--pretrained_path', type=str, default='checkpoint/CHECKPOINT.ckpt', help='Path for pretrained model file')
     parser.add_argument('--mode', type=str, default='video', help='Inference mode. it can be "video" or "image"')
     parser.add_argument('--file_path', type=str, default='./sample.mp4', help='Path for the video or image you want to infer')
     parser.add_argument('--save_path', type=str, default='./output.mp4', help='Path for saved the inference video')
