@@ -146,12 +146,11 @@ $$
 # Contributors
 
 <b>
-<li>김주의
-<li>박준영
-<li>이수형
-<li>조용기
-<li>조정빈
-<li>황채연
+👑 김주의
+👑 박준영
+👑 조용기
+👑 조정빈
+👑 황채연
 <b>
 
 ![footer](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=150&section=footer&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
