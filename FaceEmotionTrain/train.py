@@ -19,7 +19,6 @@ from torch.utils.tensorboard import SummaryWriter
 import pdb
 
 def train(cfg, args, writer=None):
-    # (0) : global
     if not cfg['emotion']:
         num_classes = 11
     elif cfg['dataset']['clsnum'] == 8:
@@ -66,29 +65,23 @@ def train(cfg, args, writer=None):
             pickle.dump(logit_adjustment, f, protocol=pickle.HIGHEST_PROTOCOL)
     model = model_build(model_name=model_name, in_channel=in_channel, num_classes=num_classes)
 
-
-    # (0) : Loss function
     if cfg['train']['loss'] not in ['ldam', 'cb']:
         loss_func = build_loss_func(cfg['train']['loss'], device=device)
     else:
         cls_num_list = train_dataset.get_cls_num()
         print(f"# of classes : {cls_num_list}")
         loss_func = build_loss_func(cfg['train']['loss'], device=device, cls_num_list=cls_num_list)
-
-    # (1) : Optimizer & Scheduler
+        
     optimizer = build_optim(cfg, model)
     scheduler = build_scheduler(cfg, optimizer)
     start = 0
     epochs = cfg['train']['epochs']
 
-    # (2) : Device setting
     if 'cuda' in device and torch.cuda.is_available():
         model = model.to(device)
-
-    # (3) : Create directory to save checkpoints
+        
     os.makedirs(args.save, exist_ok=True)
-
-    # (4) : Resume previous training
+    
     if '.ckpt' in args.resume or '.pt' in args.resume:
         print("RESUME")
         checkpoint = torch.load(args.resume)
@@ -119,8 +112,6 @@ def train(cfg, args, writer=None):
                                 show_input=True))
     
     for epoch in range(start, epochs):
-
-        # (0) : Training
         training_loss, training_acc = 0.0, 0.0
         total = 0
         model.train()
@@ -168,7 +159,6 @@ def train(cfg, args, writer=None):
                 
             training_acc += accuracy
             loading.set_description(f"Loss : {training_loss/(i+1):.4f}, Acc : {100*training_acc/(i+1):.2f}%")
-            # break
 
         print(f"Epoch #{epoch + 1} >>>> Training loss : {training_loss / len(train_dataloader):.6f}, Training acc : {100*training_acc/len(train_dataloader):.2f}%")
         if writer is not None:
@@ -177,7 +167,6 @@ def train(cfg, args, writer=None):
             writer.flush()
         scheduler.step()
         
-        # (1): Evaluation
         model.eval()
         with torch.no_grad():
             validation_loss, val_acc = 0.0, 0.0
@@ -198,7 +187,7 @@ def train(cfg, args, writer=None):
                 writer.add_scalar("Validation loss", validation_loss/len(val_dataloader), epoch)
                 writer.add_scalar("Validation accuracy", 100*val_acc/len(val_dataloader), epoch)
                 writer.flush()
-        # (3) : Checkpoint
+
         torch.save(
             {
                 "model_state_dict": model.state_dict(),
