@@ -145,12 +145,12 @@ $$
 
 # Contributors
 
-<b>
-👑 김주의
-👑 박준영
-👑 조용기
-👑 조정빈
-👑 황채연
-<b>
+<p align="left"; style="margin:0px 280px"> <b>
+</br> &nbsp; 👑 김주의, YAI 10th
+</br> &nbsp; 👑 박준영, YAI 9th
+</br> &nbsp; 👑 조용기, YAI 9th
+</br> &nbsp; 👑 조정빈, YAI 9th
+</br> &nbsp; 👑 황채연, YAI 10th
+</b></p> 
 
 ![footer](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=150&section=footer&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
