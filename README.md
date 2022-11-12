@@ -60,7 +60,7 @@ conda install scikit-image
 pip install tqdm
 ```
 <p align="center"> <img src="figure\demo_sample.gif" width="500"/> </p>
-
+<p align="center"> <img src="figure\demo_sample2.gif" width="500"/> </p>
 ---
 # Tools for Training
 ## Data Augementations
