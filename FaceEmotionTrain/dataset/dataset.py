@@ -21,7 +21,7 @@ class FaceEmotionDataset(Dataset):
         
         if csv_file is None:
             print("Getting samples from directory...")
-            self.images, self.labels, self.lnds = self._get_samples_with_labels()
+            self.images, self.labels = self._get_samples_with_labels()
         
         else:
             print("Getting samples from csvfile...")
@@ -48,17 +48,17 @@ class FaceEmotionDataset(Dataset):
             else:
                 raise ValueError("Not available metric")
 
-            self.images, self.labels, self.lnds = info["images"], info["labels"], info["lnds"]
+            self.images, self.labels = info["images"], info["labels"]
 
         if emotion_only:
-            self.images, self.labels, self.lnds = self._get_only_emotion()
+            self.images, self.labels = self._get_only_emotion()
 
     def __len__(self):
         assert len(self.images) == len(self.labels), "images and labels should exist as pair"
         return len(self.labels)
     
     def _get_samples_with_labels(self):
-        images, labels, landmarks = [], [], []
+        images, labels = [], []
         if self.option == "train":
             rootdir = os.path.abspath("../AFFNet/train_set/images")
             labeldir = os.path.abspath("../AFFNet/train_set/annotations")
@@ -67,7 +67,6 @@ class FaceEmotionDataset(Dataset):
                 if fileext == ".jpg":
                     images += [os.path.join(rootdir, file)]                              
                     labels += [np.load(os.path.join(labeldir, filename+"_exp.npy"))]
-                    landmarks += [np.load(os.path.join(labeldir, filename+"_lnd.npy"))]
 
         elif self.option == "val":
             rootdir = os.path.abspath("../AFFNet/val_set/images")
@@ -77,13 +76,11 @@ class FaceEmotionDataset(Dataset):
                 if fileext == ".jpg":
                     image += [os.path.join(rootdir, file)]                                
                     label += [np.load(os.path.join(labeldir, filename+"_exp.npy"))]
-                    landmarks += [np.load(os.path.join(labeldir, filename+"_lnd.npy"))]
-
         else:
             raise ValueError("Not available metric")
 
         
-        return images ,labels, landmarks
+        return images ,labels
 
     def print_cls_num(self):
         if self.emotion_only:
@@ -124,21 +121,20 @@ class FaceEmotionDataset(Dataset):
 
 
     def _get_only_emotion(self):
-        images, labels, landmarks = [], [], []
-        for (img, lbl, lnd) in zip(self.images, self.labels, self.lnds):
+        images, labels = [], []
+        for (img, lbl) in zip(self.images, self.labels):
             if lbl<self.emotion_num:
                 images += [img]
                 labels += [lbl]
-                landmarks += [lnd]
-
-        return images, labels, landmarks
+        return images, labels
 
     def __getitem__(self, idx):
-        img_path, label, lnd = self.images[idx], self.labels[idx], self.lnds[idx]
+        img_path, label = self.images[idx], self.labels[idx]
         image = cv2.cvtColor(cv2.imread(img_path),
                              cv2.COLOR_BGR2GRAY if self.gray else cv2.COLOR_BGR2RGB)
         if self.transform:
             if self.masking:
+                lnd = np.load(img_path.relace("images", "annotations").replace(".jpg", "_lnd.npy"))
                 image = face_synthesis(image, lnd).float()
             image = self.transform(image).float()
 
