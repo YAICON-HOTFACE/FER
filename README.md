@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=250&section=header&text=YAI%20%20Conference&fontSize=45&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
+![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=YAI%20%20Conference&fontSize=45&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
 <!-- 
 <p align="center"><a href="#">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=0:F9D976,100:F39F86&height=250&section=header&text="YAI Conference" &fontSize=40&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40" alt="header" />
@@ -182,4 +182,4 @@ $$
 
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-![footer](https://capsule-render.vercel.app/api?type=waving&color=timeGradient:F39F86&height=150&section=footer&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
+![footer](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=150&section=footer&animation=fadeIn&fontColor=FFFFFF&fontAlignY=40)
